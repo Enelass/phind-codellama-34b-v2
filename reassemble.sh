@@ -49,6 +49,7 @@ echo -e "${GREEN}   -> Success: Target directory found.${NC}"
 
 # 3. Reassemble the file from chunks
 echo -e "\n${BLUE}3. Reassembling file from chunks in '$CHUNKS_DIR'...${NC}"
+echo -e "${YELLOW}   -> This will take a long time as the model is 20GB big. Please be patient.${NC}"
 # Use find to robustly collect chunk files
 chunk_files=()
 while IFS= read -r -d '' f; do

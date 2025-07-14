@@ -57,8 +57,9 @@ echo -e "${GREEN}   -> Success: Sufficient disk space available.${NC}"
 
 # 3. Download the repository archive
 echo -e "\n${BLUE}3. Downloading repository from GitHub...${NC}"
+echo -e "${YELLOW}   -> This will take a long time as the model is 20GB big. Please be patient.${NC}"
 # Download the repository archive and capture HTTP status code in one step
-HTTP_STATUS=$(curl -L -w "%{http_code}" -o model_repo.zip "$REPO_URL")
+HTTP_STATUS=$(curl -L -w "%{\nhttp_code}" -o model_repo.zip "$REPO_URL")
 if [[ "$HTTP_STATUS" -ne 200 ]]; then
   echo -e "${RED}Error: Failed to download repository archive. HTTP status: $HTTP_STATUS${NC}"
   exit 10
