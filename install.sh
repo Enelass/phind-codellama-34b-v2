@@ -75,25 +75,17 @@ echo -e "\n${BLUE}4. Extracting repository archive...${NC}"
 unzip -q model_repo.zip
 echo -e "${GREEN}   -> Success: Archive extracted.${NC}"
 
-# DEBUG: List files in extracted directory before removal
-echo -e "${YELLOW}Debug: Listing files in $EXTRACTED_DIR_NAME before removing install.sh:${NC}"
-ls -l "$EXTRACTED_DIR_NAME"
-
 # Remove install.sh from the extracted directory to prevent accidental double download
 if [[ -f "$EXTRACTED_DIR_NAME/install.sh" ]]; then
-  echo -e "${YELLOW}Removing install.sh from extracted directory to prevent double download...${NC}"
   rm -f "$EXTRACTED_DIR_NAME/install.sh"
 fi
 
-# Copy chunk files from original workspace if present
-if [[ -d "model-chunks" && -n $(ls model-chunks/part_* 2>/dev/null) ]]; then
-  echo -e "${YELLOW}Copying chunk files from workspace model-chunks to extracted directory...${NC}"
-  cp model-chunks/part_* "$EXTRACTED_DIR_NAME/model-chunks/"
+# Check for chunk files in the extracted directory
+if ! ls "$EXTRACTED_DIR_NAME/model-chunks/part_*" >/dev/null 2>&1; then
+  echo -e "${RED}Error: No chunk files found in '$EXTRACTED_DIR_NAME/model-chunks' after extraction.${NC}"
+  echo -e "${YELLOW}Please download the required model chunk files and place them in '$EXTRACTED_DIR_NAME/model-chunks' before re-running this script.${NC}"
+  exit 12
 fi
-
-# DEBUG: List files in extracted directory after removal/copy
-echo -e "${YELLOW}Debug: Listing files in $EXTRACTED_DIR_NAME/model-chunks after copying chunk files:${NC}"
-ls -l "$EXTRACTED_DIR_NAME/model-chunks"
 
 # 5. Navigate into the extracted directory
 echo -e "\n${BLUE}5. Entering repository directory...${NC}"
