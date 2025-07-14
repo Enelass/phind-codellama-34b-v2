@@ -72,7 +72,7 @@ fi
 
 # 4. Extract the archive
 echo -e "\n${BLUE}4. Extracting repository archive...${NC}"
-unzip -q model_repo.zip
+unzip -oq model_repo.zip
 echo -e "${GREEN}   -> Success: Archive extracted.${NC}"
 
 # Remove install.sh from the extracted directory to prevent accidental double download
