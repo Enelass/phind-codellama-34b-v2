@@ -14,7 +14,6 @@ YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
 # --- Configuration ---
-# IMPORTANT: Replace this URL with the correct one for your repository.
 REPO_URL="https://github.com/enelass/phind-codellama-34b-v2/archive/refs/heads/main.zip"
 # The name of the directory inside the zip file (usually repo-name-branch-name)
 EXTRACTED_DIR_NAME="phind-codellama-34b-v2-main"
