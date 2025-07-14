@@ -1,4 +1,4 @@
-# Phind CodeLlama 34B v2 - Offline Model Installer
+# Phind CodeLlama 34B v2 - Mirror Model Installer
 
 ## ⚠️ Important Disclaimer
 
