@@ -72,8 +72,8 @@ fi
 
 # 4. Extract the archive
 echo -e "\n${BLUE}4. Extracting repository archive...${NC}"
-# Remove common files that may cause unzip prompts
-rm -f "$EXTRACTED_DIR_NAME/.DS_Store" "$EXTRACTED_DIR_NAME/README.md" "$EXTRACTED_DIR_NAME/install.sh" "$EXTRACTED_DIR_NAME/reassemble.sh"
+# Remove the extracted directory entirely to prevent unzip prompts
+rm -rf "$EXTRACTED_DIR_NAME"
 unzip -oq model_repo.zip
 echo -e "${GREEN}   -> Success: Archive extracted.${NC}"
 
