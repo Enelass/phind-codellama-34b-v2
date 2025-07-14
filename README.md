@@ -29,7 +29,7 @@ This is the easiest way to get started. Open your terminal and run the following
 **Important**: You must replace `<YOUR_GITHUB_USERNAME>` with the GitHub username where this repository is hosted.
 
 ```sh
-curl -sSL https://raw.githubusercontent.com/<YOUR_GITHUB_USERNAME>/phind-codellama-34b-v2/main/install.sh | zsh
+curl -sSL https://raw.githubusercontent.com/enelass/phind-codellama-34b-v2/main/install.sh | zsh
 ```
 
 The installer script performs the following actions:

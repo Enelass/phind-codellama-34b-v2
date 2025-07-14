@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 
 # --- Configuration ---
 # IMPORTANT: Replace this URL with the correct one for your repository.
-REPO_URL="https://github.com/<YOUR_GITHUB_USERNAME>/phind-codellama-34b-v2/archive/refs/heads/main.zip"
+REPO_URL="https://github.com/enelass/phind-codellama-34b-v2/archive/refs/heads/main.zip"
 # The name of the directory inside the zip file (usually repo-name-branch-name)
 EXTRACTED_DIR_NAME="phind-codellama-34b-v2-main"
 # Temporary directory for the download
@@ -24,6 +24,12 @@ TMP_DIR="/tmp"
 REQUIRED_SPACE_KB=$((40 * 1024 * 1024))
 
 # --- Script Logic ---
+
+# --- Pre-flight Checks ---
+if [[ "$REPO_URL" == *"<YOUR_GITHUB_USERNAME>"* ]]; then
+  echo -e "${RED}Error: REPO_URL is not set to a valid GitHub repository. Please update the REPO_URL variable in this script before running it.${NC}"
+  exit 9
+fi
 
 echo -e "${BLUE}Starting the automated model download and installation process...${NC}"
 
@@ -50,13 +56,44 @@ echo -e "${GREEN}   -> Success: Sufficient disk space available.${NC}"
 
 # 3. Download the repository archive
 echo -e "\n${BLUE}3. Downloading repository from GitHub...${NC}"
-curl -L -o model_repo.zip "$REPO_URL"
+# Download the repository archive and capture HTTP status code in one step
+HTTP_STATUS=$(curl -L -w "%{http_code}" -o model_repo.zip "$REPO_URL")
+if [[ "$HTTP_STATUS" -ne 200 ]]; then
+  echo -e "${RED}Error: Failed to download repository archive. HTTP status: $HTTP_STATUS${NC}"
+  exit 10
+fi
 echo -e "${GREEN}   -> Success: Repository downloaded as model_repo.zip${NC}"
+
+# Check if the downloaded file is a valid zip
+if ! unzip -t model_repo.zip >/dev/null 2>&1; then
+  echo -e "${RED}Error: Downloaded file is not a valid zip archive. Please check the REPO_URL and your network connection.${NC}"
+  exit 11
+fi
 
 # 4. Extract the archive
 echo -e "\n${BLUE}4. Extracting repository archive...${NC}"
 unzip -q model_repo.zip
 echo -e "${GREEN}   -> Success: Archive extracted.${NC}"
+
+# DEBUG: List files in extracted directory before removal
+echo -e "${YELLOW}Debug: Listing files in $EXTRACTED_DIR_NAME before removing install.sh:${NC}"
+ls -l "$EXTRACTED_DIR_NAME"
+
+# Remove install.sh from the extracted directory to prevent accidental double download
+if [[ -f "$EXTRACTED_DIR_NAME/install.sh" ]]; then
+  echo -e "${YELLOW}Removing install.sh from extracted directory to prevent double download...${NC}"
+  rm -f "$EXTRACTED_DIR_NAME/install.sh"
+fi
+
+# Copy chunk files from original workspace if present
+if [[ -d "model-chunks" && -n $(ls model-chunks/part_* 2>/dev/null) ]]; then
+  echo -e "${YELLOW}Copying chunk files from workspace model-chunks to extracted directory...${NC}"
+  cp model-chunks/part_* "$EXTRACTED_DIR_NAME/model-chunks/"
+fi
+
+# DEBUG: List files in extracted directory after removal/copy
+echo -e "${YELLOW}Debug: Listing files in $EXTRACTED_DIR_NAME/model-chunks after copying chunk files:${NC}"
+ls -l "$EXTRACTED_DIR_NAME/model-chunks"
 
 # 5. Navigate into the extracted directory
 echo -e "\n${BLUE}5. Entering repository directory...${NC}"

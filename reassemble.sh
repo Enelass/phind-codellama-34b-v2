@@ -1,9 +1,11 @@
 #!/bin/zsh
+set -e
+setopt null_glob
+setopt no_nomatch
+
 
 # This script reassembles file chunks, verifies the SHA256 checksum,
 # and moves the file to the ~/.ollama directory on macOS.
-
-set -e
 
 # --- Color Definitions ---
 GREEN='\033[0;32m'
@@ -20,7 +22,7 @@ CHUNK_PATTERN="part_*"
 # The expected SHA256 checksum of the final reassembled file.
 EXPECTED_SHA="45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2"
 # The name of the final reassembled file.
-REASSEMBLED_FILE="phind-codellama-34b-v2.gguf"
+REASSEMBLED_FILE="sha256-45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2"
 # The target directory for the final model file.
 TARGET_DIR="$HOME/.ollama"
 
@@ -47,11 +49,17 @@ echo -e "${GREEN}   -> Success: Target directory found.${NC}"
 
 # 3. Reassemble the file from chunks
 echo -e "\n${BLUE}3. Reassembling file from chunks in '$CHUNKS_DIR'...${NC}"
-if ! ls "$CHUNKS_DIR/$CHUNK_PATTERN" > /dev/null 2>&1; then
+# Use find to robustly collect chunk files
+chunk_files=()
+while IFS= read -r -d '' f; do
+  chunk_files+=("$f")
+done < <(find "$CHUNKS_DIR" -type f -name "$CHUNK_PATTERN" -print0 | sort -z)
+
+if [[ ${#chunk_files[@]} -eq 0 ]]; then
     echo -e "${RED}Error: No chunk files found in '$CHUNKS_DIR' matching '$CHUNK_PATTERN'.${NC}"
     exit 1
 fi
-cat "$CHUNKS_DIR/$CHUNK_PATTERN" > "$REASSEMBLED_FILE"
+cat "${chunk_files[@]}" > "$REASSEMBLED_FILE"
 echo -e "${GREEN}   -> Success: File reassembled as '$REASSEMBLED_FILE'.${NC}"
 
 # 4. Verify the SHA256 checksum
