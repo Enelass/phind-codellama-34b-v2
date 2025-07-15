@@ -31,7 +31,7 @@ start_spinner() {
   spinner_pid=$!
 }
 stop_spinner() {
-  local status=$1
+  local exit_code=$1
   local msg="$2"
   if [[ -n "$spinner_pid" ]]; then
     kill "$spinner_pid" >/dev/null 2>&1
@@ -40,7 +40,7 @@ stop_spinner() {
   fi
   # Clear spinner line
   printf "\r\033[K"
-  if [[ "$status" == "0" ]]; then
+  if [[ "$exit_code" == "0" ]]; then
     printf "[%s] ${GREEN}✔${NC} %s\n" "$(timestamp)" "$msg"
   else
     printf "[%s] ${RED}✗${NC} %s\n" "$(timestamp)" "$msg"
@@ -57,7 +57,7 @@ PART_LAST="nz"
 PART_SIZE=52428800 # 50MB in bytes
 TOTAL_PARTS=366
 
-echo "[`timestamp`] Starting phind-codellama-34b-v2 model download and setup..."
+printf '%s\n' "[`timestamp`] Starting phind-codellama-34b-v2 model download and setup..."
 
 # 1. Check for available disk space (40GB)
 REQUIRED_SPACE_KB=$((40 * 1024 * 1024))
@@ -65,7 +65,7 @@ AVAILABLE_SPACE_KB=$(df -k . | awk 'NR==2 {print $4}')
 AVAILABLE_SPACE_GB=$(echo "scale=2; $AVAILABLE_SPACE_KB / 1024 / 1024" | bc)
 REQUIRED_SPACE_GB=$(echo "scale=2; $REQUIRED_SPACE_KB / 1024 / 1024" | bc)
 
-echo "[`timestamp`] Disk: ${AVAILABLE_SPACE_GB}GB free, ${REQUIRED_SPACE_GB}GB required"
+printf '%s\n' "[`timestamp`] Disk: ${AVAILABLE_SPACE_GB}GB free, ${REQUIRED_SPACE_GB}GB required"
 if (( AVAILABLE_SPACE_KB < REQUIRED_SPACE_KB )); then
   echo "[`timestamp`] ${RED}Error:${NC} Not enough free disk space."
   exit 1
@@ -103,7 +103,7 @@ print_progress_bar() {
   local bar=""
   for ((i=0; i<filled; i++)); do bar+="#"; done
   for ((i=0; i<empty; i++)); do bar+="-"; done
-  echo -ne "\r[`timestamp`] [${bar}] ${percent}% ($current/$total)"
+  printf '\r%s' "[`timestamp`] [${bar}] ${percent}% ($current/$total)"
 }
 
 # Generate all two-letter suffixes from aa to nz (inclusive)
