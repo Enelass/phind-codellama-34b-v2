@@ -62,6 +62,23 @@ PART_LAST="nz"
 PART_SIZE=52428800 # 50MB in bytes
 TOTAL_PARTS=366
 
+# --- OS and Target Directory Checks ---
+if [[ "$(uname)" != "Darwin" ]]; then
+  printf '[%s] %b✗%b Not macOS (Darwin) - aborting.\n' "$(timestamp)" "$RED" "$NC"
+  exit 1
+else
+  printf '[%s] %b✔%b macOS detected\n' "$(timestamp)" "$GREEN" "$NC"
+fi
+
+TARGET_DIR="$HOME/.ollama/models/blobs"
+if [[ ! -d "$TARGET_DIR" ]]; then
+  printf '[%s] %b✗%b Target directory not found: %s\n' "$(timestamp)" "$RED" "$NC" "$TARGET_DIR"
+  printf '[%s] %bPlease make sure Ollama is installed and has been run at least once.%b\n' "$(timestamp)" "$YELLOW" "$NC"
+  exit 1
+else
+  printf '[%s] %b✔%b Target directory found: %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR"
+fi
+
 printf '%s\n' "[`timestamp`] Starting phind-codellama-34b-v2 model download and setup..."
 
 # 1. Check for available disk space (40GB)
@@ -102,6 +119,7 @@ mkdir -p "$MODEL_CHUNKS_DIR"
 
 # 5. Download all model chunk parts with a real progress bar
 # (No "Downloading model chunk parts..." line; only progress bar and final tick will be shown)
+printf '[%s] %bThis will take a long time as the model is 20GB big. Please be patient.%b\n' "$(timestamp)" "$YELLOW" "$NC"
 
 # Progress bar function
 print_progress_bar() {
