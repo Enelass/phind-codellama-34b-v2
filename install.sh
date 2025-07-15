@@ -192,4 +192,120 @@ echo -ne "\r$spaces\r"
 echo -e "[`timestamp`] ${GREEN}✔${NC} Model chunks downloaded successfully"
 
 echo
-source ./reassemble.sh
+# --- Reassembly, Checksum, and Move Logic (inlined from reassemble.sh) ---
+
+REASSEMBLED_FILE="sha256-45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2"
+EXPECTED_SHA="45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2"
+
+# Check if file already exists in target dir
+if [[ -f "$TARGET_DIR/$REASSEMBLED_FILE" ]]; then
+  printf '[%s] %b✔%b Model already exists at %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR/$REASSEMBLED_FILE"
+  exit 0
+fi
+
+# Reassemble the file from chunks
+printf '[%s] Reassembling file from chunks in %s ...\n' "$(timestamp)" "$MODEL_CHUNKS_DIR"
+chunk_files=()
+while IFS= read -r -d '' f; do
+  chunk_files+=("$f")
+done < <(find "$MODEL_CHUNKS_DIR" -type f -name "part_*" -print0 | sort -z)
+
+if [[ ${#chunk_files[@]} -eq 0 ]]; then
+  printf '[%s] %b✗%b No chunk files found in %s matching part_*\n' "$(timestamp)" "$RED" "$NC" "$MODEL_CHUNKS_DIR"
+  exit 1
+fi
+
+# Spinner for reassembly
+SPINNER_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+spinner_pid=""
+spinner_msg="please wait a bit while reassembling"
+cleanup_spinner() {
+  if [[ -n "$spinner_pid" ]]; then
+    kill "$spinner_pid" >/dev/null 2>&1
+    wait "$spinner_pid" 2>/dev/null || true
+    spinner_pid=""
+    printf "\r\033[K"
+  fi
+}
+trap cleanup_spinner EXIT INT TERM
+
+start_spinner() {
+  spinner_msg="$1"
+  local i=0
+  (
+    while :; do
+      printf "\r[%s] %s %s" "$(timestamp)" "${SPINNER_FRAMES[$i]}" "$spinner_msg"
+      i=$(( (i+1) % ${#SPINNER_FRAMES[@]} ))
+      sleep 0.1
+    done
+  ) &
+  spinner_pid=$!
+}
+
+stop_spinner() {
+  cleanup_spinner
+  printf "[%s] %b✔%b Reassembly complete\n" "$(timestamp)" "$GREEN" "$NC"
+}
+
+start_spinner "please wait a bit while reassembling"
+cat "${chunk_files[@]}" > "$REASSEMBLED_FILE"
+stop_spinner
+
+printf '[%s] %b✔%b File reassembled as %s\n' "$(timestamp)" "$GREEN" "$NC" "$REASSEMBLED_FILE"
+
+# Spinner for checksum
+CSUM_SPINNER_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+csum_spinner_pid=""
+csum_spinner_msg="please wait a bit while verifying checksum"
+cleanup_csum_spinner() {
+  if [[ -n "$csum_spinner_pid" ]]; then
+    kill "$csum_spinner_pid" >/dev/null 2>&1
+    wait "$csum_spinner_pid" 2>/dev/null || true
+    csum_spinner_pid=""
+    printf "\r\033[K"
+  fi
+}
+trap cleanup_csum_spinner EXIT INT TERM
+
+start_csum_spinner() {
+  csum_spinner_msg="$1"
+  local i=0
+  (
+    while :; do
+      printf "\r[%s] %s %s" "$(timestamp)" "${CSUM_SPINNER_FRAMES[$i]}" "$csum_spinner_msg"
+      i=$(( (i+1) % ${#CSUM_SPINNER_FRAMES[@]} ))
+      sleep 0.1
+    done
+  ) &
+  csum_spinner_pid=$!
+}
+
+stop_csum_spinner() {
+  cleanup_csum_spinner
+  printf "[%s] %b✔%b Checksum calculation complete\n" "$(timestamp)" "$GREEN" "$NC"
+}
+
+printf '[%s] Verifying SHA256 checksum ...\n' "$(timestamp)"
+start_csum_spinner "please wait a bit while verifying checksum"
+CALCULATED_SHA=$(shasum -a 256 "$REASSEMBLED_FILE" | awk '{print $1}')
+stop_csum_spinner
+
+printf '[%s] Expected SHA: %s\n' "$(timestamp)" "$EXPECTED_SHA"
+printf '[%s] Calculated SHA: %s\n' "$(timestamp)" "$CALCULATED_SHA"
+
+if [[ "$CALCULATED_SHA" != "$EXPECTED_SHA" ]]; then
+  printf '[%s] %b✗%b SHA256 checksum mismatch. Removing file.\n' "$(timestamp)" "$RED" "$NC"
+  rm "$REASSEMBLED_FILE"
+  exit 1
+else
+  printf '[%s] %b✔%b Checksum verified\n' "$(timestamp)" "$GREEN" "$NC"
+fi
+
+# Move the reassembled file to the target directory
+if mv "$REASSEMBLED_FILE" "$TARGET_DIR/"; then
+  printf '[%s] %b✔%b File moved to %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR/$REASSEMBLED_FILE"
+  printf '[%s] %b✔%b Model setup complete! please run it using `ollama run phind-codellama:34b-v2`\n' "$(timestamp)" "$GREEN" "$NC"
+else
+  printf '[%s] %b✗%b Failed to move file to %s\n' "$(timestamp)" "$RED" "$NC" "$TARGET_DIR"
+  exit 1
+fi
