@@ -254,14 +254,14 @@ if [[ -f "$TARGET_DIR/$REASSEMBLED_FILE" ]]; then
   # Download all sha256 files
   for sha_file in "${MANIFEST_SHA256_FILES[@]}"; do
     start_spinner "Downloading $sha_file"
-    curl -L -o "$MANIFEST_TARGET_DIR/$sha_file" "$MANIFEST_SHA256_BASEURL/$sha_file" --silent --show-error
+    curl -L -o "$TARGET_DIR/$sha_file" "$MANIFEST_SHA256_BASEURL/$sha_file" --silent --show-error
     curl_status=$?
     stop_spinner "$curl_status" "$sha_file downloaded"
     if [ "$curl_status" != "0" ]; then
       printf '[%s] %b✗%b Failed to download %s (curl exit %s)\n' "$(timestamp)" "$RED" "$NC" "$sha_file" "$curl_status"
       exit 1
     fi
-    if [ ! -s "$MANIFEST_TARGET_DIR/$sha_file" ]; then
+    if [ ! -s "$TARGET_DIR/$sha_file" ]; then
       printf '[%s] %b✗%b %s is empty or missing after download\n' "$(timestamp)" "$RED" "$NC" "$sha_file"
       exit 1
     fi
