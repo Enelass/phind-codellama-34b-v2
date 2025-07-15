@@ -62,7 +62,7 @@ MANIFEST_TARGET_DIR="$HOME/.ollama/models/manifests/registry.ollama.ai/library/p
 MANIFEST_TARGET_FILE="$MANIFEST_TARGET_DIR/34b-v2"
 SHA256_URL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256"
 MODEL_CHUNKS_URL_BASE="https://github.com/Enelass/phind-codellama-34b-v2/raw/refs/heads/main/model-chunks"
-MODEL_CHUNKS_DIR="model-chunks"
+MODEL_CHUNKS_DIR="/tmp/model-chunks-phind-34b-v2"
 PART_FIRST="aa"
 PART_LAST="nz"
 PART_SIZE=52428800 # 50MB in bytes
@@ -78,14 +78,20 @@ fi
 
 TARGET_DIR="$HOME/.ollama/models/blobs"
 if [[ ! -d "$TARGET_DIR" ]]; then
-  printf '[%s] %b✗%b Target directory not found: %s\n' "$(timestamp)" "$RED" "$NC" "$TARGET_DIR"
-  printf '[%s] %bPlease make sure Ollama is installed and has been run at least once.%b\n' "$(timestamp)" "$YELLOW" "$NC"
-  exit 1
+  printf '[%s] %b!%b Target directory not found, attempting to create: %s\n' "$(timestamp)" "$YELLOW" "$NC" "$TARGET_DIR"
+  if mkdir -p "$TARGET_DIR"; then
+    printf '[%s] %b✔%b Created target directory: %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR"
+  else
+    printf '[%s] %b✗%b Failed to create target directory: %s\n' "$(timestamp)" "$RED" "$NC" "$TARGET_DIR"
+    printf '[%s] %bPlease make sure Ollama is installed and has been run at least once.%b\n' "$(timestamp)" "$YELLOW" "$NC"
+    exit 1
+  fi
 else
   printf '[%s] %b✔%b Target directory found: %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR"
 fi
 
 printf '%s\n' "[`timestamp`] Starting phind-codellama-34b-v2 model download and setup..."
+printf '[%s] %bModel chunks will be stored in (and reused from): %s%b\n' "$(timestamp)" "$BLUE" "$MODEL_CHUNKS_DIR" "$NC"
 
 # 1. Check for available disk space (40GB)
 REQUIRED_SPACE_KB=$((40 * 1024 * 1024))
@@ -331,6 +337,7 @@ if mv "$REASSEMBLED_FILE" "$TARGET_DIR/"; then
     exit 1
   fi
   printf '[%s] %b✔%b Model setup complete! please run it using `ollama run phind-codellama:34b-v2`\n' "$(timestamp)" "$GREEN" "$NC"
+  printf '[%s] %bYou may now delete the chunk files in: %s%b\n' "$(timestamp)" "$BLUE" "$MODEL_CHUNKS_DIR" "$NC"
 else
   printf '[%s] %b✗%b Failed to move file to %s\n' "$(timestamp)" "$RED" "$NC" "$TARGET_DIR"
   exit 1
