@@ -18,6 +18,17 @@ timestamp() {
 SPINNER_FRAMES=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
 spinner_pid=""
 spinner_msg=""
+cleanup_spinner() {
+  if [[ -n "$spinner_pid" ]]; then
+    kill "$spinner_pid" >/dev/null 2>&1
+    wait "$spinner_pid" 2>/dev/null || true
+    spinner_pid=""
+    # Clear spinner line
+    printf "\r\033[K"
+  fi
+}
+trap cleanup_spinner EXIT INT TERM
+
 start_spinner() {
   spinner_msg="$1"
   local i=0
@@ -33,13 +44,7 @@ start_spinner() {
 stop_spinner() {
   local exit_code=$1
   local msg="$2"
-  if [[ -n "$spinner_pid" ]]; then
-    kill "$spinner_pid" >/dev/null 2>&1
-    wait "$spinner_pid" 2>/dev/null || true
-    spinner_pid=""
-  fi
-  # Clear spinner line
-  printf "\r\033[K"
+  cleanup_spinner
   if [[ "$exit_code" == "0" ]]; then
     printf "[%s] ${GREEN}✔${NC} %s\n" "$(timestamp)" "$msg"
   else
@@ -81,10 +86,16 @@ if [ "$curl_status" != "0" ]; then exit 1; fi
 
 # 3. Download SHA256 file with npm-style spinner
 start_spinner "Downloading SHA256 file"
-curl -L -o model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256 "$SHA256_URL" --silent --show-error
+curl -L -w "%{http_code}" -o model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256 "$SHA256_URL" --silent --show-error > .curl_status_sha256
 curl_status=$?
-stop_spinner "$curl_status" "SHA256 file downloaded successfully"
-if [ "$curl_status" != "0" ]; then exit 1; fi
+http_code=$(tail -c 3 .curl_status_sha256)
+rm -f .curl_status_sha256
+if [ "$curl_status" = "0" ] && [ "$http_code" = "200" ]; then
+  stop_spinner 0 "SHA256 file downloaded successfully"
+else
+  stop_spinner 1 "SHA256 file download failed (HTTP $http_code, curl exit $curl_status)"
+  exit 1
+fi
 
 # 4. Prepare model-chunks directory
 mkdir -p "$MODEL_CHUNKS_DIR"
@@ -162,8 +173,5 @@ spaces=$(printf '%*s' $((bar_width + 30)) "")
 echo -ne "\r$spaces\r"
 echo -e "[`timestamp`] ${GREEN}✔${NC} Model chunks downloaded successfully"
 
-echo -e "\n${BLUE}Next step:${NC}"
-echo -e "${YELLOW}To verify and assemble the model, run:${NC}"
-echo -e "${GREEN}  ./reassemble.sh${NC}"
-echo -e "${YELLOW}This will verify the SHA256 checksum and clean up only if the check passes.${NC}"
-echo -e "${GREEN}✅ Download complete. Ready for reassembly.${NC}"
+echo
+source ./reassemble.sh
