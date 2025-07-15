@@ -2,6 +2,10 @@
 
 set -e
 
+SCRIPT_VERSION="1.0.0" # Update as needed
+
+printf "[%s] %bphind-codellama-34b-v2 installer version: %s%b\n" "$(date "+%Y-%m-%d %H:%M:%S")" "$BLUE" "$SCRIPT_VERSION" "$NC"
+
 # --- Color Definitions ---
 GREEN='\033[0;32m'
 RED='\033[0;31m'
