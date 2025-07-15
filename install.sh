@@ -62,7 +62,11 @@ MANIFEST_TARGET_DIR="$HOME/.ollama/models/manifests/registry.ollama.ai/library/p
 MANIFEST_TARGET_FILE="$MANIFEST_TARGET_DIR/34b-v2"
 SHA256_URL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256"
 MODEL_CHUNKS_URL_BASE="https://github.com/Enelass/phind-codellama-34b-v2/raw/refs/heads/main/model-chunks"
-MODEL_CHUNKS_DIR="/tmp/model-chunks-phind-34b-v2"
+if [ -d "./model-chunks" ]; then
+  MODEL_CHUNKS_DIR="./model-chunks"
+else
+  MODEL_CHUNKS_DIR="/tmp/model-chunks-phind-34b-v2"
+fi
 PART_FIRST="aa"
 PART_LAST="nz"
 PART_SIZE=52428800 # 50MB in bytes
@@ -92,6 +96,9 @@ fi
 
 printf '%s\n' "[`timestamp`] Starting phind-codellama-34b-v2 model download and setup..."
 printf '[%s] %bModel chunks will be stored in (and reused from): %s%b\n' "$(timestamp)" "$BLUE" "$MODEL_CHUNKS_DIR" "$NC"
+if [ "$MODEL_CHUNKS_DIR" = "./model-chunks" ]; then
+  printf '[%s] %bDetected local model-chunks directory, using it for chunk storage and resume.%b\n' "$(timestamp)" "$BLUE" "$NC"
+fi
 
 # 1. Check for available disk space (40GB)
 REQUIRED_SPACE_KB=$((40 * 1024 * 1024))
@@ -126,6 +133,8 @@ mkdir -p "$MODEL_CHUNKS_DIR"
 # 5. Download all model chunk parts with a real progress bar
 # (No "Downloading model chunk parts..." line; only progress bar and final tick will be shown)
 printf '[%s] %bThis will take a long time as the model is 20GB big. Please be patient.%b\n' "$(timestamp)" "$YELLOW" "$NC"
+printf '[%s] %bIf the download is interrupted, simply run install.sh again to resume from where it left off.%b\n' "$(timestamp)" "$BLUE" "$NC"
+printf '[%s] %bResume only works as long as the machine is not rebooted (since /tmp is cleared on reboot).%b\n' "$(timestamp)" "$BLUE" "$NC"
 
 # Progress bar function
 print_progress_bar() {
