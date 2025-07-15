@@ -32,7 +32,7 @@ This repository provides a robust, resumable installer for the `phind-codellama-
 Open your terminal and run:
 
 ```sh
-curl -sSL https://raw.githubusercontent.com/enelass/phind-codellama-34b-v2/main/install.sh | zsh
+curl -sSL https://raw.githubusercontent.com/enelass/phind-codellama-34b-v2/main/install.sh | bash
 ```
 
 #### What the Installer Does
@@ -43,6 +43,7 @@ curl -sSL https://raw.githubusercontent.com/enelass/phind-codellama-34b-v2/main/
 - Downloads all model chunk parts with a real progress bar and resumable downloads.
 - Reassembles the model from chunks with a spinner and verifies the SHA256 checksum (with a spinner).
 - Moves the model file to the correct Ollama models directory.
+- **Downloads all required manifest and metadata files (including all sha256-* files) from GitHub, not the Ollama registry.**
 - Prints a final message with the run command.
 
 ### Windows (Manual Steps)
@@ -82,7 +83,17 @@ There is no automated script for Windows, but you can install the model manually
 
    *(Replace `...` with all chunk names in order. You can generate this command with a script or by using PowerShell's `Get-ChildItem`.)*
 
-3. **Verify SHA256 Checksum**
+3. **Download Manifest and Metadata Files**
+
+   Download the following files from GitHub and place them in your Ollama manifests directory (usually `%USERPROFILE%\.ollama\models\manifests\registry.ollama.ai\library\phind-codellama\`):
+
+   - [34b-v2](https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/34b-v2)
+   - [sha256-41774062cd349c744e8ee986c1aaf5784b7e42fbe306619536fa7386d421da78](https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/sha256-41774062cd349c744e8ee986c1aaf5784b7e42fbe306619536fa7386d421da78)
+   - [sha256-62ab78abadd613cb882be1e63a1a0d843685858f5f9456e7c4e3350284245d04](https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/sha256-62ab78abadd613cb882be1e63a1a0d843685858f5f9456e7c4e3350284245d04)
+   - [sha256-ee041eb771eb86734e51c251e840d15b6933121777e2ca290a6dece875f3ecd1](https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/sha256-ee041eb771eb86734e51c251e840d15b6933121777e2ca290a6dece875f3ecd1)
+   - [sha256-fb9390528638173921c5100c17dbba3d549a651a83caf1d00ecc6ab437052a13](https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/sha256-fb9390528638173921c5100c17dbba3d549a651a83caf1d00ecc6ab437052a13)
+
+4. **Verify SHA256 Checksum**
 
    In Command Prompt:
 
@@ -96,7 +107,7 @@ There is no automated script for Windows, but you can install the model manually
    45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2
    ```
 
-4. **Move the Model File**
+5. **Move the Model File**
 
    Move the reassembled file to your Ollama models directory (usually):
 
@@ -125,6 +136,7 @@ The model will appear in Ollama automatically if the steps complete successfully
 - Ensure you have run Ollama at least once before installing (to create the models directory).
 - If you encounter disk space or permission errors, free up space or check your user permissions.
 - If the install is interrupted, simply re-run the install command (macOS) or repeat the manual steps (Windows) to resume.
+- The installer will always download the latest manifest and metadata files from GitHub to ensure compatibility.
 
 ## License
 
