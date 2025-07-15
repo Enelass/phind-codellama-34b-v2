@@ -132,13 +132,14 @@ print_progress_bar() {
   local current=$1
   local total=$2
   local width=40
-  local percent=$(( 100 * current / total ))
+  local percent
+  percent=$(awk "BEGIN {printf \"%.1f\", 100 * $current / $total}")
   local filled=$(( width * current / total ))
   local empty=$(( width - filled ))
   local bar=""
   for ((i=0; i<filled; i++)); do bar+="#"; done
   for ((i=0; i<empty; i++)); do bar+="-"; done
-  printf '\r%s' "[`timestamp`] [${bar}] ${percent}% ($current/$total)"
+  printf '\r%s' "[`timestamp`] [${bar}] ${percent}%% ($current/$total)"
 }
 
 # Generate all two-letter suffixes from aa to nz (inclusive)
