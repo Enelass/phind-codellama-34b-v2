@@ -53,7 +53,9 @@ stop_spinner() {
 }
 
 # --- Configuration ---
-REASSEMBLE_URL="https://github.com/Enelass/phind-codellama-34b-v2/raw/main/reassemble.sh"
+MANIFEST_URL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/34b-v2"
+MANIFEST_TARGET_DIR="$HOME/.ollama/models/manifests/registry.ollama.ai/library/phind-codellama"
+MANIFEST_TARGET_FILE="$MANIFEST_TARGET_DIR/34b-v2"
 SHA256_URL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256"
 MODEL_CHUNKS_URL_BASE="https://github.com/Enelass/phind-codellama-34b-v2/raw/refs/heads/main/model-chunks"
 MODEL_CHUNKS_DIR="model-chunks"
@@ -304,6 +306,16 @@ fi
 # Move the reassembled file to the target directory
 if mv "$REASSEMBLED_FILE" "$TARGET_DIR/"; then
   printf '[%s] %b✔%b File moved to %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR/$REASSEMBLED_FILE"
+  # Download manifest file for Ollama registry
+  mkdir -p "$MANIFEST_TARGET_DIR"
+  start_spinner "Downloading manifest for phind-codellama:34b-v2"
+  curl -L -o "$MANIFEST_TARGET_FILE" "$MANIFEST_URL" --silent --show-error
+  curl_status=$?
+  stop_spinner "$curl_status" "Manifest downloaded to $MANIFEST_TARGET_FILE"
+  if [ "$curl_status" != "0" ]; then
+    printf '[%s] %b✗%b Failed to download manifest file\n' "$(timestamp)" "$RED" "$NC"
+    exit 1
+  fi
   printf '[%s] %b✔%b Model setup complete! please run it using `ollama run phind-codellama:34b-v2`\n' "$(timestamp)" "$GREEN" "$NC"
 else
   printf '[%s] %b✗%b Failed to move file to %s\n' "$(timestamp)" "$RED" "$NC" "$TARGET_DIR"
