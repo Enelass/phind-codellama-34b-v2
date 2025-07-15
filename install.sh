@@ -95,13 +95,7 @@ if (( AVAILABLE_SPACE_KB < REQUIRED_SPACE_KB )); then
   exit 1
 fi
 
-# 2. Download reassemble.sh with npm-style spinner
-start_spinner "Downloading reassemble.sh"
-curl -L -o reassemble.sh "$REASSEMBLE_URL" --silent --show-error
-curl_status=$?
-chmod +x reassemble.sh
-stop_spinner "$curl_status" "reassemble.sh downloaded successfully"
-if [ "$curl_status" != "0" ]; then exit 1; fi
+# (reassemble.sh download removed; logic now in this script)
 
 # 3. Download SHA256 file with npm-style spinner
 start_spinner "Downloading SHA256 file"
@@ -163,8 +157,14 @@ for suffix in "${PARTS[@]}"; do
       continue
     fi
     curl -L -C - -o "$part_file" "$url" --silent --show-error
+    curl_status=$?
+    if [[ "$curl_status" != "0" ]]; then
+      echo -e "\n[`timestamp`] ${RED}✗${NC} Error: curl failed to download $part_file (exit $curl_status)"
+      exit 1
+    fi
     if [[ ! -f "$part_file" ]]; then
-      echo -e "\n${RED}   -> Error: Failed to download $part_file.${NC}"
+      echo -e "\n[`timestamp`] ${RED}✗${NC} Error: $part_file not found after download"
+      exit 1
     fi
   else
     # For all other chunks, check for exactly 50MB
@@ -176,13 +176,19 @@ for suffix in "${PARTS[@]}"; do
       fi
     fi
     curl -L -C - -o "$part_file" "$url" --silent --show-error
+    curl_status=$?
+    if [[ "$curl_status" != "0" ]]; then
+      echo -e "\n[`timestamp`] ${RED}✗${NC} Error: curl failed to download $part_file (exit $curl_status)"
+      exit 1
+    fi
     if [[ -f "$part_file" ]]; then
       size=$(stat -f%z "$part_file" 2>/dev/null || stat -c%s "$part_file" 2>/dev/null)
       if [[ "$size" != "$PART_SIZE" ]]; then
-        echo -e "\n${RED}   -> Warning: $part_file size is $size bytes (expected $PART_SIZE).${NC}"
+        echo -e "\n[`timestamp`] ${RED}✗${NC} Warning: $part_file size is $size bytes (expected $PART_SIZE)."
       fi
     else
-      echo -e "\n${RED}   -> Error: Failed to download $part_file.${NC}"
+      echo -e "\n[`timestamp`] ${RED}✗${NC} Error: $part_file not found after download"
+      exit 1
     fi
   fi
   count=$((count+1))
@@ -313,7 +319,11 @@ if mv "$REASSEMBLED_FILE" "$TARGET_DIR/"; then
   curl_status=$?
   stop_spinner "$curl_status" "Manifest downloaded to $MANIFEST_TARGET_FILE"
   if [ "$curl_status" != "0" ]; then
-    printf '[%s] %b✗%b Failed to download manifest file\n' "$(timestamp)" "$RED" "$NC"
+    printf '[%s] %b✗%b Failed to download manifest file (curl exit %s)\n' "$(timestamp)" "$RED" "$NC" "$curl_status"
+    exit 1
+  fi
+  if [ ! -s "$MANIFEST_TARGET_FILE" ]; then
+    printf '[%s] %b✗%b Manifest file is empty or missing after download\n' "$(timestamp)" "$RED" "$NC"
     exit 1
   fi
   printf '[%s] %b✔%b Model setup complete! please run it using `ollama run phind-codellama:34b-v2`\n' "$(timestamp)" "$GREEN" "$NC"
