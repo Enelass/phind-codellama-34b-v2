@@ -35,6 +35,9 @@ Open your terminal and run:
 curl -sSL https://raw.githubusercontent.com/enelass/phind-codellama-34b-v2/main/install.sh | bash
 ```
 
+![alt text](<Download the model-medium.gif>)
+
+
 #### What the Installer Does
 
 - Checks for macOS and the presence of the Ollama models directory.
@@ -45,6 +48,22 @@ curl -sSL https://raw.githubusercontent.com/enelass/phind-codellama-34b-v2/main/
 - Moves the model file to the correct Ollama models directory.
 - **Downloads all required manifest and metadata files (including all sha256-* files) from GitHub, not the Ollama registry.**
 - Prints a final message with the run command.
+
+
+## Using the Model
+
+Once installation is complete, you can run the model with:
+
+```sh
+ollama run phind-codellama:34b-v2
+```
+
+The model will appear in Ollama automatically if the steps complete successfully.
+
+![alt text](<Running the model-small.gif>)
+
+Want to code like a wizard while trapped in a metal tube at 35,000 feet? Or perhaps during your sardine-can commute experience? Maybe in your off-grid man-cave where even carrier pigeons can't find you?
+Use Cline or Roo to leverage https://www.promptingguide.ai/models/code-llama - a "where-have-you-been-all-my-life" coding companion that works without the internet's blessing! 🧙‍♂️✈️🚇🏰
 
 ### Windows (Manual Steps)
 
@@ -121,15 +140,6 @@ There is no automated script for Windows, but you can install the model manually
    %USERPROFILE%\.ollama\models\blobs\sha256-45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2
    ```
 
-## Using the Model
-
-Once installation is complete, you can run the model with:
-
-```sh
-ollama run phind-codellama:34b-v2
-```
-
-The model will appear in Ollama automatically if the steps complete successfully.
 
 ## Troubleshooting
 
