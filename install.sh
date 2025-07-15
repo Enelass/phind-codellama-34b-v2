@@ -57,7 +57,14 @@ stop_spinner() {
 }
 
 # --- Configuration ---
-MANIFEST_URL="https://registry.ollama.ai/v2/library/phind-codellama/manifests/34b-v2"
+MANIFEST_URL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/34b-v2"
+MANIFEST_SHA256_FILES=(
+  "sha256-41774062cd349c744e8ee986c1aaf5784b7e42fbe306619536fa7386d421da78"
+  "sha256-62ab78abadd613cb882be1e63a1a0d843685858f5f9456e7c4e3350284245d04"
+  "sha256-ee041eb771eb86734e51c251e840d15b6933121777e2ca290a6dece875f3ecd1"
+  "sha256-fb9390528638173921c5100c17dbba3d549a651a83caf1d00ecc6ab437052a13"
+)
+MANIFEST_SHA256_BASEURL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main"
 MANIFEST_TARGET_DIR="$HOME/.ollama/models/manifests/registry.ollama.ai/library/phind-codellama"
 MANIFEST_TARGET_FILE="$MANIFEST_TARGET_DIR/34b-v2"
 SHA256_URL="https://raw.githubusercontent.com/Enelass/phind-codellama-34b-v2/refs/heads/main/model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256"
@@ -229,8 +236,9 @@ EXPECTED_SHA="45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2"
 # Check if file already exists in target dir
 if [[ -f "$TARGET_DIR/$REASSEMBLED_FILE" ]]; then
   printf '[%s] %b✔%b Model already exists at %s\n' "$(timestamp)" "$GREEN" "$NC" "$TARGET_DIR/$REASSEMBLED_FILE"
-  # Download manifest file for Ollama registry even if model exists
+  # Download manifest and sha256 files from GitHub even if model exists
   mkdir -p "$MANIFEST_TARGET_DIR"
+  # Download manifest
   start_spinner "Downloading manifest for phind-codellama:34b-v2"
   curl -L -o "$MANIFEST_TARGET_FILE" "$MANIFEST_URL" --silent --show-error
   curl_status=$?
@@ -243,6 +251,21 @@ if [[ -f "$TARGET_DIR/$REASSEMBLED_FILE" ]]; then
     printf '[%s] %b✗%b Manifest file is empty or missing after download\n' "$(timestamp)" "$RED" "$NC"
     exit 1
   fi
+  # Download all sha256 files
+  for sha_file in "${MANIFEST_SHA256_FILES[@]}"; do
+    start_spinner "Downloading $sha_file"
+    curl -L -o "$MANIFEST_TARGET_DIR/$sha_file" "$MANIFEST_SHA256_BASEURL/$sha_file" --silent --show-error
+    curl_status=$?
+    stop_spinner "$curl_status" "$sha_file downloaded"
+    if [ "$curl_status" != "0" ]; then
+      printf '[%s] %b✗%b Failed to download %s (curl exit %s)\n' "$(timestamp)" "$RED" "$NC" "$sha_file" "$curl_status"
+      exit 1
+    fi
+    if [ ! -s "$MANIFEST_TARGET_DIR/$sha_file" ]; then
+      printf '[%s] %b✗%b %s is empty or missing after download\n' "$(timestamp)" "$RED" "$NC" "$sha_file"
+      exit 1
+    fi
+  done
   printf '[%s] %b✔%b Model setup complete! please run it using `ollama run phind-codellama:34b-v2`\n' "$(timestamp)" "$GREEN" "$NC"
   printf '[%s] %bYou may now delete the chunk files in: %s%b\n' "$(timestamp)" "$BLUE" "$MODEL_CHUNKS_DIR" "$NC"
   exit 0
