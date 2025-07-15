@@ -1,18 +1,19 @@
 # Phind CodeLlama 34B v2 - Mirror Model Installer
 
 ## ⚠️ Important Disclaimer
-
 This repository and the tools within are provided as a workaround for users who are unable to download Ollama models directly due to restrictive corporate network policies.
-
 **You are solely responsible for ensuring that using this model and the methods in this repository complies with your organization's IT, data security, and fair use policies.**
-
 If you have any reason to believe that downloading, storing, or using this model on your corporate-managed device is against policy, **DO NOT PROCEED**. By using the contents of this repository, you acknowledge that you are doing so at your own risk and are responsible for any potential policy violations.
 
 ---
 
 ## About This Repository
 
-This repository provides a robust, resumable installer for the `phind-codellama-34b-v2` Ollama model, designed for users on networks where direct downloads from `ollama.ai` are blocked. The model is split into 50MB chunks for reliable downloading, with a script to reassemble, verify, and install the model for Ollama.
+Want to code on your SOE while trapped in a metal tube at 35,000 feet? Or perhaps during your sardine-can commute experience? Maybe in your off-grid man-cave where even carrier pigeons can't find you? Use your favorite AI IDE coding agent like [Cline](https://cline.bot/), [Roo](https://github.com/RooCodeInc/Roo-Code/blob/main/README.md), [Kilo](https://kilocode.ai/), or [Kiro](https://aws.amazon.com/blogs/devops/amazon-q-developer-agentic-coding-experience/) to leverage [codellama](https://www.promptingguide.ai/models/code-llama) - a "where-have-you-been-all-my-life" coding companion that works without the internet's blessing! 🧙‍♂️✈️🚇
+
+This repository provides a robust, resumable installer for the `phind-codellama-34b-v2` Ollama model, designed for users on networks where direct downloads from `ollama.ai` and/or `cloudflarestorage.com/ollama/` are blocked. The model is split into 50MB chunks for reliable downloading, with a script to reassemble, verify, and install the model for Ollama.
+
+
 
 ### Target Audience
 
@@ -62,8 +63,6 @@ The model will appear in Ollama automatically if the steps complete successfully
 
 ![alt text](<Running the model-small.gif>)
 
-Want to code like a wizard while trapped in a metal tube at 35,000 feet? Or perhaps during your sardine-can commute experience? Maybe in your off-grid man-cave where even carrier pigeons can't find you?
-Use Cline or Roo to leverage https://www.promptingguide.ai/models/code-llama - a "where-have-you-been-all-my-life" coding companion that works without the internet's blessing! 🧙‍♂️✈️🚇🏰
 
 ### Windows (Manual Steps)
 
