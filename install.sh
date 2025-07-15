@@ -2,7 +2,7 @@
 
 set -e
 
-SCRIPT_VERSION="1.0.0" # Update as needed
+SCRIPT_VERSION="1.1.0" # Update as needed
 
 printf "[%s] %bphind-codellama-34b-v2 installer version: %s%b\n" "$(date "+%Y-%m-%d %H:%M:%S")" "$BLUE" "$SCRIPT_VERSION" "$NC"
 
@@ -116,10 +116,11 @@ fi
 
 # 3. Download SHA256 file with npm-style spinner
 start_spinner "Downloading SHA256 file"
-curl -L -w "%{http_code}" -o model-chunks/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256 "$SHA256_URL" --silent --show-error > .curl_status_sha256
+curl_status_file="$MODEL_CHUNKS_DIR/.curl_status_sha256"
+curl -L -w "%{http_code}" -o "$MODEL_CHUNKS_DIR/45488384ce7a0a42ed3afa01b759df504b9d994f896aacbea64e5b1414d38ba2.sha256" "$SHA256_URL" --silent --show-error > "$curl_status_file"
 curl_status=$?
-http_code=$(tail -c 3 .curl_status_sha256)
-rm -f .curl_status_sha256
+http_code=$(tail -c 3 "$curl_status_file")
+rm -f "$curl_status_file" || printf '[%s] %bWarning:%b Could not remove temp status file: %s\n' "$(timestamp)" "$YELLOW" "$NC" "$curl_status_file"
 if [ "$curl_status" = "0" ] && [ "$http_code" = "200" ]; then
   stop_spinner 0 "SHA256 file downloaded successfully"
 else
